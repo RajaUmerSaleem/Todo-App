@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './index.css'
 import { v4 as uuidv4 } from 'uuid';
 import Navbar from './components/Navbar'
+import Footer from './components/footer'
 function App() {
   const [form, setform] = useState("")
   const [Todo, setTodo] = useState("")
@@ -64,7 +65,7 @@ function App() {
   return (
     <>
       <div><Navbar /></div>
-      <div className='container sm:w-[50%] w-full h-full my-[20px] rounded-lg p-[12px] mx-auto shadow-black shadow-2xl'>
+      <div className='container sm:w-[50%] w-full h-[102%] rounded-lg  mx-auto shadow-black shadow-sm'>
         <div className='w-full h-full bg-yellow-500'>
           <div className='w-full h-[60px] bg-black flex justify-center px-[5px] items-center'>
             <input onChange={handleChange} value={form} className='w-[80%] h-[80%]  bg-white border-black rounded-[20px] px-2' type="text"  >
@@ -90,9 +91,10 @@ function App() {
           </div>
         </div>
       </div>
-      <div></div>
+      <div>
+        <Footer/>
+      </div>
     </>
   )
 }
-
 export default App
