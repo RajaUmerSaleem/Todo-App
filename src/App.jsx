@@ -10,7 +10,6 @@ function App() {
   const [isfinished, setFinished] = useState(false)
   useEffect(() => {
     const localTodos = localStorage.getItem('todos')
-    console.log(localTodos)
     if (localTodos) {
       let todos = JSON.parse(localStorage.getItem("todos"))
       setTodos(todos)
@@ -65,18 +64,16 @@ function App() {
 
 
   const handleedit = (e, t) => {
-    console.log(t.Todo)
     setform(t.Todo)
     handleDelete(e, t)
   }
   const handleFinish = () => {
     setFinished(prevState => {
       const newState = !prevState;
-      console.log(newState);
       return newState;
     });
   }
-  const filteredTodos = isfinished ? Todos.filter(items => items.status) : Todos;
+  const filteredTodos = isfinished ? Todos.filter(items => items.status) : Todos.filter(items => !items.status);
   return (
     <>
       <div><Navbar /></div>
@@ -92,7 +89,7 @@ function App() {
           </div>
           <div className='w-[98%] mx-auto h-[10%] bg-black rounded-lg flex justify-center items-center text-[25px]'>
             <button onClick={(e) => { handlereset(e, Todos) }} className={`w-[50%] mx-[2px] h-[80%]  rounded-lg font-semibold duration-75 border-black c ${Todos.length === 0 ? "hidden" : "bg-red-700 text-white"}`}>{Todos.length === 0 ? "Empty" : "Clear All"}</button>
-            <button onClick={handleFinish} className={`w-[50%] mx-[2px] h-[80%]  duration-75 border-black font-semibold rounded-lg ${isfinished ? "bg-white text-black" : "bg-red-700 text-white"}`}>{isfinished ? "Show All " : "Show Done"}</button>
+            <button onClick={handleFinish} className={`w-[50%] mx-[2px] h-[80%]  duration-75 border-black font-semibold rounded-lg ${isfinished ? "bg-white text-black" : "bg-red-700 text-white"}`}>{isfinished ? "Show Pending" : "Show Done"} </button>
           </div>
           <div className='w-[98%] h-[50vh] mx-auto my-2 overflow-y-auto overflow-x-hidden'>
             {filteredTodos.map(items => (<div key={items.id} className='w-full h-[15%] bg-white flex justify-center rounded-sm my-[2px] px-[5px] items-center'>
@@ -110,6 +107,7 @@ function App() {
                 <button onClick={(e) => { handleedit(e, items) }} className='w-[40%] mx-[2px] h-[80%] bg-black hover:bg-gray-600 font-bold hover:font-extrabold border-black rounded-sm text-white material-symbols-outlined '>edit</button>
               </div>
             </div>))}
+            {Todos.length === 0 && <div className='w-full h-[100%] flex justify-center text-white items-center text-[25px]'>No Tasks Found</div>}
           </div>
         </div>
       </div>
