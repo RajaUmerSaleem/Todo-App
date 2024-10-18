@@ -47,19 +47,25 @@ function App() {
     });
   }
   const handleDelete = (e, t) => {
-    setTodos(prevTodos => {
-      const updatedTodos = prevTodos.filter(item => item.id !== t.id);
-      store(updatedTodos);
-      return updatedTodos;
-    });
+    alert("Are you sure to delete?(yes/no)")
+    let response = prompt("");
+    response === 'yes' ?
+      setTodos(prevTodos => {
+        const updatedTodos = prevTodos.filter(item => item.id !== t.id);
+        store(updatedTodos);
+        return updatedTodos;
+      }) :
+      alert("Data not deleted")
   }
 
   const handlereset = () => {
-    setTodos(() => {
+    alert("Your are going empty you todo list.. Are you sure about this?")
+    let response = prompt("Write you response(yes/no)")
+    response == 'yes' ? setTodos(() => {
       const updatedTodos = [];
       store(updatedTodos);
       return updatedTodos;
-    });
+    }) : (alert("Data not deleted"))
   }
 
 
@@ -73,6 +79,11 @@ function App() {
       return newState;
     });
   }
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handleAdd();
+    }
+  };
   const filteredTodos = isfinished ? Todos.filter(items => items.status) : Todos.filter(items => !items.status);
   return (
     <>
@@ -80,9 +91,9 @@ function App() {
       <div className='container sm:w-[50%] w-full h-[80vh] rounded-lg  mx-auto shadow-black shadow-sm'>
         <div className='w-full h-full bg-gray-800'>
           <div className='w-full h-[60px] bg-black flex justify-center px-[5px] items-center'>
-            <input onChange={handleChange} value={form} className='w-[80%] h-[80%]  bg-white border-black rounded-[20px] px-2' type="text" placeholder='Write Your Task...' >
+            <input onChange={handleChange} onKeyPress={handleKeyPress}  value={form} className='w-[80%] h-[80%]  bg-white border-black rounded-[20px] px-2' type="text" placeholder='Write Your Task...' >
             </input>
-            <button onClick={handleAdd} className='w-[20%] mx-[8px] h-[80%] bg-green-700 hover:bg-green-400  font-bold hover:font-extrabold border-black rounded-[20px] text-white material-symbols-outlined' >Add</button>
+            <button onClick={handleAdd}  className='w-[20%] mx-[8px] h-[80%] bg-green-700 hover:bg-green-400  font-bold hover:font-extrabold border-black rounded-[20px] text-white material-symbols-outlined' >Add</button>
           </div>
           <div className='w-[98%] mx-auto h-[10%] bg-white flex justify-around rounded-xl px-[5px] items-center text-[25px] font-mono font-bold'>
             {Todos.length !== 0 ? " Tasks List" : "Make your Tasks List"}
