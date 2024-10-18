@@ -71,7 +71,11 @@ function App() {
 
   const handleedit = (e, t) => {
     setform(t.Todo)
-    handleDelete(e, t)
+    setTodos(prevTodos => {
+      const updatedTodos = prevTodos.filter(item => item.id !== t.id);
+      store(updatedTodos);
+      return updatedTodos;
+    });
   }
   const handleFinish = () => {
     setFinished(prevState => {
