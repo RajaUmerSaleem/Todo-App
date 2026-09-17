@@ -3,24 +3,38 @@ import './index.css'
 import { v4 as uuidv4 } from 'uuid';
 import Navbar from './components/Navbar'
 import Footer from './components/footer'
+import InstallPrompt from './components/InstallPrompt'
+// Import electron-store
+const Store = window.require ? window.require('electron-store') : null;
+const store = Store ? new Store() : null;
+
 function App() {
   const [form, setform] = useState("")
   const [Todo, setTodo] = useState("")
   const [Todos, setTodos] = useState([])
   const [isfinished, setFinished] = useState(false)
-  useEffect(() => {
-    const localTodos = localStorage.getItem('todos')
-    if (localTodos) {
-      let todos = JSON.parse(localStorage.getItem("todos"))
-      setTodos(todos)
-      store(todos)
+
+  // Helper to get/set todos using electron-store or fallback to localStorage
+  const getTodos = () => {
+    if (store) {
+      return store.get('todos') || []
+    } else {
+      const localTodos = localStorage.getItem('todos')
+      return localTodos ? JSON.parse(localTodos) : []
     }
+  }
+  const saveTodos = (todos) => {
+    if (store) {
+      store.set('todos', todos)
+    } else {
+      localStorage.setItem('todos', JSON.stringify(todos))
+    }
+  }
+
+  useEffect(() => {
+    setTodos(getTodos())
   }, [])
 
-  const store = (Todos) => {
-    localStorage.setItem("todos", JSON.stringify(Todos))
-
-  }
   const handleChange = (e) => {
     setTodo(e.target.value)
     setform(e.target.value)
@@ -31,7 +45,7 @@ function App() {
       const currentDate = new Date().toLocaleDateString();
       setTodos(prevTodos => {
         const newTodos = [...prevTodos, { id: uuidv4(), Todo, isCompleted: true, status: false, Date: currentDate }];
-        localStorage.setItem('todos', JSON.stringify(newTodos));
+        saveTodos(newTodos);
         return newTodos;
       });
       setTodo("")
@@ -42,74 +56,80 @@ function App() {
   const handlestrike = (e, t) => {
     setTodos(prevTodos => {
       const updatedTodos = prevTodos.map(item => item.id === t.id ? { ...item, status: !item.status } : item);
-      store(updatedTodos);
+      saveTodos(updatedTodos);
       return updatedTodos;
     });
   }
+
   const handleDelete = (e, t) => {
     alert("Are you sure to delete?(yes/no)")
     let response = prompt("");
-    response === 'yes' ?
+    if (response === 'yes') {
       setTodos(prevTodos => {
         const updatedTodos = prevTodos.filter(item => item.id !== t.id);
-        store(updatedTodos);
+        saveTodos(updatedTodos);
         return updatedTodos;
-      }) :
+      });
+    } else {
       alert("Data not deleted")
+    }
   }
 
   const handlereset = () => {
     alert("Your are going empty you todo list.. Are you sure about this?")
     let response = prompt("Write you response(yes/no)")
-    response == 'yes' ? setTodos(() => {
-      const updatedTodos = [];
-      store(updatedTodos);
-      return updatedTodos;
-    }) : (alert("Data not deleted"))
+    if (response === 'yes') {
+      setTodos(() => {
+        const updatedTodos = [];
+        saveTodos(updatedTodos);
+        return updatedTodos;
+      });
+    } else {
+      alert("Data not deleted")
+    }
   }
-
 
   const handleedit = (e, t) => {
     setform(t.Todo)
     setTodos(prevTodos => {
       const updatedTodos = prevTodos.filter(item => item.id !== t.id);
-      store(updatedTodos);
+      saveTodos(updatedTodos);
       return updatedTodos;
     });
   }
+
   const handleFinish = () => {
-    setFinished(prevState => {
-      const newState = !prevState;
-      return newState;
-    });
+    setFinished(prevState => !prevState);
   }
+
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       handleAdd();
     }
   };
+
   const filteredTodos = isfinished ? Todos.filter(items => items.status) : Todos.filter(items => !items.status);
+
   return (
     <>
       <div><Navbar /></div>
       <div className='container sm:w-[50%] w-full h-[80vh] rounded-lg  mx-auto shadow-black shadow-sm'>
         <div className='w-full h-full bg-gray-800'>
           <div className='w-full h-[60px] bg-black flex justify-center px-[5px] items-center'>
-            <input onChange={handleChange} onKeyPress={handleKeyPress}  value={form} className='w-[80%] h-[80%]  bg-white border-black rounded-[20px] px-2' type="text" placeholder='Write Your Task...' >
-            </input>
-            <button onClick={handleAdd}  className='w-[20%] mx-[8px] h-[80%] bg-green-700 hover:bg-green-400  font-bold hover:font-extrabold border-black rounded-[20px] text-white material-symbols-outlined' >Add</button>
+            <input onChange={handleChange} onKeyPress={handleKeyPress} value={form} className='w-[80%] h-[80%]  bg-white border-black rounded-[20px] px-2' type="text" placeholder='Write Your Task...' />
+            <button onClick={handleAdd} className='w-[20%] mx-[8px] h-[80%] bg-green-700 hover:bg-green-400  font-bold hover:font-extrabold border-black rounded-[20px] text-white material-symbols-outlined' >Add</button>
           </div>
           <div className='w-[98%] mx-auto h-[10%] bg-white flex justify-around rounded-xl px-[5px] items-center text-[25px] font-mono font-bold'>
             {Todos.length !== 0 ? " Tasks List" : "Make your Tasks List"}
           </div>
           <div className='w-[98%] mx-auto h-[10%] bg-black rounded-lg flex justify-center items-center text-[25px]'>
             <button onClick={(e) => { handlereset(e, Todos) }} className={`w-[50%] mx-[2px] h-[80%]  rounded-lg font-semibold duration-75 border-black c ${Todos.length === 0 ? "hidden" : "bg-red-700 text-white"}`}>{Todos.length === 0 ? "Empty" : "Clear All"}</button>
-            <button onClick={handleFinish} className={`w-[50%] mx-[2px] h-[80%]  duration-75 border-black font-semibold rounded-lg ${isfinished ? "bg-white text-black" : "bg-red-700 text-white"}`}>{isfinished ? "Show Pending" : "Show Done"} </button>
+            <button onClick={handleFinish} className={`w-[50%] mx-[2px] h-[80%]  duration-75 border-black font-semibold rounded-lg ${Todos.length === 0 ? "disabled" : ""} ${isfinished ? "bg-white text-black" : "bg-red-700 text-white"}`}>{isfinished ? "Show Pending" : "Show Done"} </button>
           </div>
           <div className='w-[98%] h-[50vh] mx-auto my-2 overflow-y-auto overflow-x-hidden'>
             {filteredTodos.map(items => (<div key={items.id} className='w-full h-[15%] bg-white flex justify-center rounded-sm my-[2px] px-[5px] items-center'>
               <button className='w-[5%] mx-[5px] h-[50%] flex border-black  text-white'>
-                <input type="checkbox" checked={items.status} onClick={(e) => { handlestrike(e, items) }} />
+                <input type="checkbox" checked={items.status} onClick={(e) => { handlestrike(e, items) }} readOnly />
               </button>
               <div className='w-[72%] h-full flex flex-col bg-white'>
                 <div className={`w-full h-[77%] border-black text-black  flex pt-2 px-1  overflow-scroll overflow-x-hidden decoration-red-700 ${items.status ? "line-through text-green-800" : ""} `}>
@@ -129,6 +149,7 @@ function App() {
       <div>
         <Footer />
       </div>
+      <InstallPrompt />
     </>
   )
 }
